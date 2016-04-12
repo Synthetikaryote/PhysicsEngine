@@ -1,19 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PhysicsObject : MonoBehaviour {
+public class RK4Ball : MonoBehaviour {
 
 	// Use this for initialization
-	void Start() {
+	void Start () {
 	
 	}
-
-    void FixedUpdate() {
-        
-    }
 	
 	// Update is called once per frame
-	void Update() {
+	void Update () {
 	
 	}
 }
