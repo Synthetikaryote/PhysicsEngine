@@ -15,11 +15,11 @@ public class ExplicitEulerBall : PhysicsObject {
         var p = transform.position;
         p.y += v.y * Time.deltaTime;
         float bottomY = p.y - ((RectTransform)transform).sizeDelta.y * 0.5f;
-        if (bottomY < Main.I().floorY) {
-            p.y -= bottomY - Main.I().floorY;
+        if (bottomY < Uber.I().floorY) {
+            p.y -= bottomY - Uber.I().floorY;
             v.y = -v.y;
         }
         transform.position = p;
-        v.y -= Main.I().gravity * Time.deltaTime;
+        v.y -= Uber.I().gravity * Time.deltaTime;
 	}
 }

@@ -14,13 +14,13 @@ public class VerletBall : PhysicsObject
     // Update is called once per frame
     void FixedUpdate() {
         Vector3 p = transform.position;
-        float adjustedFloorY = Main.I().floorY + ((RectTransform)transform).sizeDelta.y * 0.5f;
+        float adjustedFloorY = Uber.I().floorY + ((RectTransform)transform).sizeDelta.y * 0.5f;
         if (p.y < adjustedFloorY) {
             float dy = p.y - lastPos.y;
             p.y = adjustedFloorY + (adjustedFloorY - p.y);
             lastPos.y = p.y - dy;
         }
-        p.y += (p.y - lastPos.y) - Main.I().gravity * Time.deltaTime * Time.deltaTime;
+        p.y += (p.y - lastPos.y) - Uber.I().gravity * Time.deltaTime * Time.deltaTime;
         lastPos = transform.position;
         transform.position = p;
     }

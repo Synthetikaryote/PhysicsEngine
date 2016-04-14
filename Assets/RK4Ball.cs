@@ -39,7 +39,7 @@ public class RK4Ball : MonoBehaviour {
         p.y = p.y + dpdt * dt;
         v.y = v.y + dvdt * dt;
 
-        float adjustedFloorY = Main.I().floorY + ((RectTransform)transform).sizeDelta.y * 0.5f;
+        float adjustedFloorY = Uber.I().floorY + ((RectTransform)transform).sizeDelta.y * 0.5f;
         if (p.y < adjustedFloorY) {
             p.y -= p.y - adjustedFloorY;
             v.y = -v.y;
@@ -49,6 +49,6 @@ public class RK4Ball : MonoBehaviour {
 	}
 
     Derivative evaluate(float dt, Derivative d) {
-        return new Derivative(v.y + d.v * dt, -Main.I().gravity);
+        return new Derivative(v.y + d.v * dt, -Uber.I().gravity);
     }
 }
