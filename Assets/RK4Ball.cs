@@ -19,7 +19,6 @@ public class RK4Ball : MonoBehaviour {
             this.p = p;
             this.v = v;
         }
-
     };
 	
 	void FixedUpdate() {

@@ -19,7 +19,7 @@ public class RopeSimulation : MonoBehaviour {
     public float springFriction = 0.1f;
     public float airFrictionConst = 0.02f;
     public int segments = 10;
-    
+
     PhysicsObject ropeTop;
     Canvas canvas;
 

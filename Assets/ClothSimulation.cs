@@ -21,11 +21,11 @@ public class ClothSimulation : MonoBehaviour {
     public float airFrictionConst = 0.02f;
     public int rows = 10;
     public int columns = 10;
+    public PhysicsObject.NumericalIntegrationMethod integrationMethod = PhysicsObject.NumericalIntegrationMethod.RK4;
+
     List<PhysicsObject> masses;
-
-    Canvas canvas;
-
     List<Spring> springs;
+    Canvas canvas;
 
     void Awake() {
         // get the canvas
@@ -41,6 +41,7 @@ public class ClothSimulation : MonoBehaviour {
                 mass.transform.localScale = new Vector3(1f, 1f, 1f);
                 var obj = mass.GetComponent<PhysicsObject>();
                 obj.mass = connectionMass;
+                obj.integrationMethod = integrationMethod;
                 masses.Add(obj);
             }
         }
