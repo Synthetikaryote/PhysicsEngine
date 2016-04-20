@@ -15,25 +15,28 @@ public class Uber : MonoBehaviour {
 
     public float floorY = 0f;
     [NonSerialized]
-    public float gravity = 500f;
+    public float gravity = -300f;
     [NonSerialized]
     public float airFriction = 0.01f;
     public List<PhysicsObject> objects;
 
-    // Use this for initialization
+    public delegate void PhysicsInitDelegate();
+    public PhysicsInitDelegate PhysicsInit;
+    public delegate void PhysicsSolveDelegate();
+    public PhysicsInitDelegate PhysicsSolve;
+    public delegate void PhysicsSimulateDelegate();
+    public PhysicsInitDelegate PhysicsSimulate;
+
     void Start () {
         var floorGO = GameObject.Find("Floor");
         if (floorGO)
             floorY = floorGO.transform.position.y + ((RectTransform)floorGO.transform).sizeDelta.y * 0.5f;
-        objects = new List <PhysicsObject>(GameObject.FindObjectsOfType<PhysicsObject>());
+        objects = new List<PhysicsObject>(FindObjectsOfType<PhysicsObject>());
     }
 
     void FixedUpdate() {
-    }
-
-    public void PhysicsUpdate() {
-        objects.ForEach(o => o.PhysicsInit());
-        objects.ForEach(o => o.PhysicsSolve());
-        objects.ForEach(o => o.PhysicsUpdate());
+        PhysicsInit();
+        PhysicsSolve();
+        PhysicsSimulate();
     }
 }

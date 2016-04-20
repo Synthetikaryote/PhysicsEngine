@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Spring : PhysicsObject {
+public class Spring : MonoBehaviour {
 
     public PhysicsObject mass1, mass2;
     public float springConst;
@@ -16,6 +16,10 @@ public class Spring : PhysicsObject {
         this.friction = f;
     }
 
+    void Start() {
+        Uber.I().PhysicsSolve += PhysicsSolve;
+    }
+
     void Update() {
         var p1 = mass1.transform.position;
         var p2 = mass2.transform.position;
@@ -24,10 +28,10 @@ public class Spring : PhysicsObject {
         var rt = (RectTransform)transform;
         float length = (p1 - p2).magnitude;
         float stretchFactor = Mathf.Min(1f, springLength / length);
-        rt.sizeDelta = new Vector2(2f + 4f * stretchFactor, length);
+        rt.sizeDelta = new Vector2(1f + 2f * stretchFactor, length);
     }
 
-    public override void PhysicsSolve() {
+    public void PhysicsSolve() {
         var delta = mass1.transform.position - mass2.transform.position;
         float currentLength = delta.magnitude;
         var force = Vector3.zero;
