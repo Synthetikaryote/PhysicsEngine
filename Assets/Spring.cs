@@ -16,6 +16,17 @@ public class Spring : PhysicsObject {
         this.friction = f;
     }
 
+    void Update() {
+        var p1 = mass1.transform.position;
+        var p2 = mass2.transform.position;
+        transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(p2.y - p1.y, p2.x - p1.x) * Mathf.Rad2Deg + 90f);
+        transform.position = (p1 + p2) * 0.5f;
+        var rt = (RectTransform)transform;
+        float length = (p1 - p2).magnitude;
+        float stretchFactor = Mathf.Min(1f, springLength / length);
+        rt.sizeDelta = new Vector2(2f + 4f * stretchFactor, length);
+    }
+
     public override void PhysicsSolve() {
         var delta = mass1.transform.position - mass2.transform.position;
         float currentLength = delta.magnitude;
