@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 public class ClothSimulation : MonoBehaviour {
@@ -12,7 +10,6 @@ public class ClothSimulation : MonoBehaviour {
     public Vector3 ropeConnectionV = Vector3.zero;
 
     public float groundRepulsion = 100f;
-    public float groundFriction = 0.1f;
     public float groundAbsorption = 0.1f;
     public float connectionMass = 0.1f;
     public float springLength = 50f;

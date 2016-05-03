@@ -24,6 +24,7 @@ public class PhysicsObject : MonoBehaviour {
         Uber.I().PhysicsSimulate += PhysicsSimulate;
 
         p = transform.position;
+        v = Vector3.zero;
     }
 
     public virtual void ApplyForce(Vector3 force) {
