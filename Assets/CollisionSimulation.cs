@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class CollisionSimulation : MonoBehaviour {
@@ -9,6 +10,8 @@ public class CollisionSimulation : MonoBehaviour {
     public float airFrictionConst = 0.02f;
     public float ballSizeMin = 24f;
     public float ballSizeMax = 64f;
+    public Color normalColor;
+    public Color collidingColor;
     Canvas canvas;
     List<PhysicsObject> masses;
     public int numBalls = 10;
@@ -41,7 +44,6 @@ public class CollisionSimulation : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        Debug.Log(Uber.I().objects[0].transform.position);
 	}
 
     void PhysicsSolve() {
@@ -86,10 +88,20 @@ public class CollisionSimulation : MonoBehaviour {
 
     void PhysicsSimulate() {
         for (int i = 0; i < Uber.I().objects.Count; ++i) {
-            for (int j = i + 1; j < Uber.I().objects.Count; ++j) {
-                var a = Uber.I().objects[i];
-
+            bool colliding = false;
+            var a = Uber.I().objects[i];
+            for (int j = 0; j < Uber.I().objects.Count; ++j) {
+                var b = Uber.I().objects[j];
+                if (a == b) continue;
+                var aRT = a.GetComponent<RectTransform>();
+                var bRT = b.GetComponent<RectTransform>();
+                var aR = aRT.sizeDelta.x * 0.75f; // should be half width but not sure why this works better
+                var bR = bRT.sizeDelta.x * 0.75f;
+                float distSq = (aRT.position - bRT.position).sqrMagnitude;
+                float radiiSq = aR * aR + bR * bR;
+                colliding |= distSq <= radiiSq;
             }
+            a.GetComponent<Image>().color = colliding ? collidingColor : normalColor;
         }
     }
 }
