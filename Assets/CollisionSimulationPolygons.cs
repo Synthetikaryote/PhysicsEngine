@@ -2,19 +2,19 @@
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class CollisionSimulation : MonoBehaviour {
-    public GameObject massPrefab;
+public class CollisionSimulationPolygons : MonoBehaviour {
+    public GameObject polyPrefab;
 
-    public float groundRepulsion = 100f;
+    public float groundRepulsion = 1000f;
     public float groundAbsorption = 0.1f;
     public float airFrictionConst = 0.02f;
-    public float ballSizeMin = 24f;
-    public float ballSizeMax = 64f;
+    public float polyPointsMin = 3;
+    public float polyPointsMax = 7;
     public Color normalColor;
     public Color collidingColor;
     Canvas canvas;
-    List<PhysicsObject> masses;
-    public int numBalls = 10;
+    List<Polygon> polys;
+    public int numPolys = 10;
     public PhysicsObject.NumericalIntegrationMethod integrationMethod = PhysicsObject.NumericalIntegrationMethod.RK4;
     bool startVelocityApplied = false;
 
@@ -22,18 +22,27 @@ public class CollisionSimulation : MonoBehaviour {
         // get the canvas
         canvas = GameObject.FindObjectOfType<Canvas>().gameObject.GetComponent<Canvas>();
 
-        // create some balls
-        masses = new List<PhysicsObject>();
-        for (int i = 0; i < numBalls; ++i) {
-            var mass = Instantiate(massPrefab, new Vector3(Random.Range(-300f, 300f), Random.Range(-300f, 300f)), Quaternion.identity) as GameObject;
-            mass.transform.SetParent(canvas.transform);
-            mass.transform.localScale = new Vector3(1f, 1f, 1f);
-            var obj = mass.GetComponent<PhysicsObject>();
-            obj.mass = 1f;
-            obj.integrationMethod = integrationMethod;
-            var r = Random.Range(ballSizeMin, ballSizeMax);
-            ((RectTransform)obj.transform).sizeDelta = new Vector2(r, r);
-            masses.Add(obj);
+        // create some polygons
+        polys = new List<Polygon>();
+        for (int i = 0; i < numPolys; ++i) {
+            var go = Instantiate(polyPrefab, new Vector3(Random.Range(-300f, 300f), Random.Range(-300f, 300f)), Quaternion.identity) as GameObject;
+            go.transform.SetParent(canvas.transform);
+            go.transform.localScale = new Vector3(1f, 1f, 1f);
+            var poly = go.GetComponent<Polygon>();
+            var points = new List<Vector3>();
+            int numPoints = Mathf.RoundToInt(Random.Range(polyPointsMin, polyPointsMax));
+            float r = 25f;
+            float slice = Mathf.PI * 2f / numPoints;
+            for (int j = 0; j < numPoints; ++j) {
+                float a = Random.Range(j * slice, (j + 1) * slice);
+                points.Add(new Vector3(r * Mathf.Cos(a), r * Mathf.Sin(a), 0f));
+            }
+            poly.points = points;
+            poly.mass = 1f;
+            poly.integrationMethod = integrationMethod;
+            ((RectTransform)poly.transform).sizeDelta = new Vector2(r, r);
+            polys.Add(poly);
+            poly.CreateOBB();
         }
     }
 
@@ -49,9 +58,9 @@ public class CollisionSimulation : MonoBehaviour {
     void PhysicsSolve() {
         if (!startVelocityApplied) {
             startVelocityApplied = true;
-            foreach (var ball in masses) {
+            foreach (var poly in polys) {
                 float a = Random.Range(0f, Mathf.PI * 2f);
-                ball.ApplyForce(8000f * new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f));
+                poly.ApplyForce(8000f * new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f));
             }
         }
 
@@ -73,7 +82,7 @@ public class CollisionSimulation : MonoBehaviour {
     }
 
     void ApplyBound(PhysicsObject obj, float dist, bool isY, bool reverseRepulsion) {
-        if (dist > 0f) {
+        if (dist >= 0f) {
             var v = obj.v;
             if (isY)
                 v.y = 0f;
@@ -87,11 +96,11 @@ public class CollisionSimulation : MonoBehaviour {
     }
 
     void PhysicsSimulate() {
-        for (int i = 0; i < masses.Count; ++i) {
+        for (int i = 0; i < polys.Count; ++i) {
             bool colliding = false;
-            var a = masses[i];
-            for (int j = 0; j < masses.Count; ++j) {
-                var b = masses[j];
+            var a = polys[i];
+            for (int j = 0; j < polys.Count; ++j) {
+                var b = polys[j];
                 if (a == b) continue;
                 var aRT = a.GetComponent<RectTransform>();
                 var bRT = b.GetComponent<RectTransform>();
@@ -101,7 +110,8 @@ public class CollisionSimulation : MonoBehaviour {
                 float radiiSq = aR * aR + bR * bR;
                 colliding |= distSq <= radiiSq;
             }
-            a.GetComponent<Image>().color = colliding ? collidingColor : normalColor;
+            foreach (var segment in a.transform.GetComponentsInChildren<Image>())
+                segment.color = colliding ? collidingColor : normalColor;
         }
     }
 }

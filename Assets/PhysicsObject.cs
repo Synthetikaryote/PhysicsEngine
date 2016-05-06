@@ -18,7 +18,7 @@ public class PhysicsObject : MonoBehaviour {
     };
     public NumericalIntegrationMethod integrationMethod = NumericalIntegrationMethod.RK4;
 
-	void Start() {
+	public virtual void Start() {
         Uber.I().PhysicsInit += PhysicsInit;
         Uber.I().PhysicsSolve += PhysicsSolve;
         Uber.I().PhysicsSimulate += PhysicsSimulate;
