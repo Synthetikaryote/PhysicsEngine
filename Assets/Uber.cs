@@ -20,7 +20,7 @@ public class Uber : MonoBehaviour {
     public float airFriction = 0.01f;
     public List<PhysicsObject> objects;
 
-    public delegate void PhysicsInitDelegate();
+    public delegate void PhysicsInitDelegate(float deltaTime);
     public PhysicsInitDelegate PhysicsInit;
     public delegate void PhysicsSolveDelegate();
     public PhysicsSolveDelegate PhysicsSolve;
@@ -35,7 +35,7 @@ public class Uber : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        PhysicsInit();
+        PhysicsInit(Time.deltaTime);
         PhysicsSolve();
         PhysicsSimulate(Time.deltaTime);
     }

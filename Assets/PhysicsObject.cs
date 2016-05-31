@@ -9,6 +9,7 @@ public class PhysicsObject : MonoBehaviour {
     public Vector3 v = Vector3.zero;
     Vector3 p = Vector3.zero;
     public float mass = 10f;
+    public float frameTime = 0f;
 
     public enum NumericalIntegrationMethod {
         EulerExplicit,
@@ -31,8 +32,9 @@ public class PhysicsObject : MonoBehaviour {
         this.force += force;
     }
 
-    public virtual void PhysicsInit() {
+    public virtual void PhysicsInit(float deltaTime) {
         force = Vector3.zero;
+        frameTime = deltaTime;
     }
 
     public virtual void PhysicsSolve() {
@@ -89,6 +91,7 @@ public class PhysicsObject : MonoBehaviour {
                 }
                 break;
         }
+        frameTime -= deltaTime;
     }
 
     class RK4Derivative {

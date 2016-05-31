@@ -68,7 +68,7 @@ public class CollisionSimulation : MonoBehaviour {
             startVelocityApplied = true;
             foreach (var ball in masses) {
                 float a = Random.Range(0f, Mathf.PI * 2f);
-                ball.ApplyForce(1000f * new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f));
+                ball.ApplyForce(8000f * new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f));
             }
         }
 
@@ -84,50 +84,70 @@ public class CollisionSimulation : MonoBehaviour {
 
     void PhysicsSimulate(float deltaTime) {
         for (int i = 0; i < masses.Count; ++i) {
-            //bool colliding = false;
+            bool colliding = false;
             var a = masses[i];
+            var aR = a.GetComponent<RectTransform>().sizeDelta.x * 0.5f;
+            var aP = a.transform.position;
 
             // check screen edges
-            foreach (var segment in segments)
-            {
-                var p = a.transform.position;
+            foreach (var segment in segments) {
                 // early out if the ball's not heading toward the wall at all
                 var vDotN = Vector3.Dot(a.v, segment.normal);
                 if (vDotN < 0) {
                     // find the time to collide
-                    var r = a.GetComponent<RectTransform>().sizeDelta.x * 0.5f;
                     // t = (r - D - n . p) / (n . v)
-                    var t = (r - segment.D - Vector3.Dot(segment.normal, p)) / vDotN;
+                    var t = (aR - segment.D - Vector3.Dot(segment.normal, aP)) / vDotN;
                     // check if the collision will be this frame
-                    if (t < deltaTime) {
+                    if (t <= a.frameTime) {
                         // advance that sphere to the collision point
                         a.PhysicsSimulate(t);
                         // bounce off the wall
                         a.v = a.v - 2f * vDotN * segment.normal;
-                        // advance the sphere the rest of the time
-                        a.PhysicsSimulate(deltaTime - t);
-                    } else {
-                        // advance it the full time
-                        a.PhysicsSimulate(deltaTime);
                     }
-                } else {
-                    // advance it the full time
-                    a.PhysicsSimulate(deltaTime);
                 }
             }
 
-            //for (int j = 0; j < masses.Count; ++j) {
-            //    var b = masses[j];
-            //    if (a == b) continue;
-            //    var aRT = a.GetComponent<RectTransform>();
-            //    var bRT = b.GetComponent<RectTransform>();
-            //    var aR = aRT.sizeDelta.x * 0.75f; // should be half width but not sure why this works better
-            //    var bR = bRT.sizeDelta.x * 0.75f;
-            //    float distSq = (aRT.position - bRT.position).sqrMagnitude;
-            //    float radiiSq = aR * aR + bR * bR;
-            //    colliding |= distSq <= radiiSq;
-            //}
-            //a.GetComponent<Image>().color = colliding ? collidingColor : normalColor;
+            // check against each other ball
+            for (int j = i + 1; j < masses.Count; ++j) {
+                var b = masses[j];
+                var bR = b.GetComponent<RectTransform>().sizeDelta.x * 0.5f;
+                var bP = b.transform.position;
+                var p = aP - bP;
+                var v = a.v - b.v;
+                // early out if they're not heading toward each other
+                var pDotV = Vector3.Dot(p, v);
+                if (pDotV <= 0) {
+                    // find the time to collide
+                    // t = (-2*pDotV +/- sqrt((2*pDotV)^2 - 4(vDotV)(pDotP - d^2))) / 2(vDotV)
+                    // d is the radii sum
+                    float d = (aR + bR);
+                    float dSq = d * d;
+                    // check if there's a root (real collision check)
+                    var vDotV = Vector3.Dot(v, v);
+                    var pDotP = Vector3.Dot(p, p);
+                    float underRoot = (2f * pDotV * 2f * pDotV) - 4f * vDotV * (pDotP - dSq);
+                    if (underRoot >= 0) {
+                        // find the time to collide
+                        float t = (-2f * pDotV - Mathf.Sqrt(underRoot)) / (2f * vDotV);
+                        if (t <= a.frameTime && t <= b.frameTime) {
+                            // advance both spheres to the collision point
+                            a.PhysicsSimulate(t);
+                            b.PhysicsSimulate(t);
+                            // bounce both off each other
+                            var n = p.normalized;
+                            // calculate impact momentum
+                            // momentum = (2 * (aV . n - bV . n)) / (a.mass + b.mass)
+                            var momentum = (2f * (Vector3.Dot(a.v, n) - Vector3.Dot(b.v, n))) / (a.mass + b.mass);
+                            // change each's velocity according to that momentum
+                            a.v += -momentum * b.mass * n;
+                            b.v += momentum * a.mass * n;
+                        }
+                    }
+                }
+            }
+
+            // advance the rest of the time remaining
+            a.PhysicsSimulate(a.frameTime);
         }
     }
 
