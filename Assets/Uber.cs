@@ -23,9 +23,9 @@ public class Uber : MonoBehaviour {
     public delegate void PhysicsInitDelegate();
     public PhysicsInitDelegate PhysicsInit;
     public delegate void PhysicsSolveDelegate();
-    public PhysicsInitDelegate PhysicsSolve;
-    public delegate void PhysicsSimulateDelegate();
-    public PhysicsInitDelegate PhysicsSimulate;
+    public PhysicsSolveDelegate PhysicsSolve;
+    public delegate void PhysicsSimulateDelegate(float deltaTime);
+    public PhysicsSimulateDelegate PhysicsSimulate;
 
     void Start () {
         var floorGO = GameObject.Find("Floor");
@@ -37,6 +37,6 @@ public class Uber : MonoBehaviour {
     void FixedUpdate() {
         PhysicsInit();
         PhysicsSolve();
-        PhysicsSimulate();
+        PhysicsSimulate(Time.deltaTime);
     }
 }

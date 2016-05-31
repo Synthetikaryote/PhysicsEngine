@@ -96,11 +96,16 @@ public class ClothSimulation : MonoBehaviour {
         }
     }
 
-    void PhysicsSimulate() {
-        for (int c = 0; c < columns; ++c) {
-            // all first row
-            masses[c].transform.position = new Vector3(canvas.pixelRect.size.x / 2 + ropeConnectionP.x - columns * springLength * 0.5f + c * springLength, canvas.pixelRect.size.y / 2 + ropeConnectionP.y, 0f);
-            masses[c].v = Vector3.zero;
+    void PhysicsSimulate(float deltaTime) {
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < columns; ++c) {
+                // all first row
+                if (r == 0) {
+                    masses[c].transform.position = new Vector3(canvas.pixelRect.size.x / 2 + ropeConnectionP.x - columns * springLength * 0.5f + c * springLength, canvas.pixelRect.size.y / 2 + ropeConnectionP.y, 0f);
+                    masses[c].v = Vector3.zero;
+                }
+                masses[r * columns + c].PhysicsSimulate(deltaTime);
+            }
         }
     }
 }

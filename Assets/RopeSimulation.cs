@@ -20,6 +20,8 @@ public class RopeSimulation : MonoBehaviour {
     public float airFrictionConst = 0.02f;
     public int segments = 10;
 
+    List<PhysicsObject> masses;
+
     PhysicsObject ropeTop;
     Canvas canvas;
 
@@ -30,7 +32,7 @@ public class RopeSimulation : MonoBehaviour {
         canvas = GameObject.FindObjectOfType<Canvas>().gameObject.GetComponent<Canvas>();
         // create the rope
         // masses
-        var masses = new List<PhysicsObject>();
+        masses = new List<PhysicsObject>();
         for (int i = 0; i < segments; ++i) {
             var startPos = ropeConnectionP;
             var mass = Instantiate(massPrefab, startPos + new Vector3(0f, -i * springLength, 0f), Quaternion.identity) as GameObject;
@@ -86,8 +88,11 @@ public class RopeSimulation : MonoBehaviour {
         }
     }
 
-    void PhysicsSimulate() {
+    void PhysicsSimulate(float deltaTime) {
         ropeTop.transform.position = new Vector3(canvas.pixelRect.size.x / 2 + ropeConnectionP.x, canvas.pixelRect.size.y / 2 + ropeConnectionP.y, 0f);
         ropeTop.v = Vector3.zero;
+        foreach (var mass in masses) {
+            mass.PhysicsSimulate(deltaTime);
+        }
     }
 }

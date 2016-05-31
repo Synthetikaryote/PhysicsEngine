@@ -95,7 +95,7 @@ public class CollisionSimulationPolygons : MonoBehaviour {
         }
     }
 
-    void PhysicsSimulate() {
+    void PhysicsSimulate(float deltaTime) {
         for (int i = 0; i < polys.Count; ++i) {
             bool colliding = false;
             var a = polys[i];
@@ -112,6 +112,7 @@ public class CollisionSimulationPolygons : MonoBehaviour {
             }
             foreach (var segment in a.transform.GetComponentsInChildren<Image>())
                 segment.color = colliding ? collidingColor : normalColor;
+            a.PhysicsSimulate(deltaTime);
         }
     }
 }

@@ -21,7 +21,7 @@ public class PhysicsObject : MonoBehaviour {
 	public virtual void Start() {
         Uber.I().PhysicsInit += PhysicsInit;
         Uber.I().PhysicsSolve += PhysicsSolve;
-        Uber.I().PhysicsSimulate += PhysicsSimulate;
+        //Uber.I().PhysicsSimulate += PhysicsSimulate;
 
         p = transform.position;
         v = Vector3.zero;
@@ -39,18 +39,18 @@ public class PhysicsObject : MonoBehaviour {
         
     }
 
-    public virtual void PhysicsSimulate() {
+    public virtual void PhysicsSimulate(float deltaTime) {
         switch(integrationMethod) {
             case NumericalIntegrationMethod.EulerExplicit: {
-                    v += (force / mass) * Time.deltaTime;
-                    transform.position += v * Time.deltaTime;
+                    v += (force / mass) * deltaTime;
+                    transform.position += v * deltaTime;
                 }
                 break;
 
             case NumericalIntegrationMethod.EulerSemiImplicit: {
-                    v += (force / mass) * Time.deltaTime;
+                    v += (force / mass) * deltaTime;
                     p = transform.position;
-                    p += v * Time.deltaTime;
+                    p += v * deltaTime;
                     float bottomY = p.y - ((RectTransform)transform).sizeDelta.y * 0.5f;
                     if (bottomY < Uber.I().floorY) {
                         p.y -= bottomY - Uber.I().floorY;
@@ -63,7 +63,7 @@ public class PhysicsObject : MonoBehaviour {
             case NumericalIntegrationMethod.Verlet: {
                     // use p as the position one frame ago
                     Vector3 newP = transform.position;
-                    newP += (newP - p) + (force / mass) * Time.deltaTime * Time.deltaTime;
+                    newP += (newP - p) + (force / mass) * deltaTime * deltaTime;
                     p = transform.position;
                     transform.position = newP;
                 }
