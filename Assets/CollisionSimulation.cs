@@ -71,20 +71,10 @@ public class CollisionSimulation : MonoBehaviour {
                 ball.ApplyForce(8000f * new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f));
             }
         }
-
-        foreach (var ball in masses) {
-            // gravity
-            //obj.ApplyForce(new Vector3(0f, Uber.I().gravity * obj.mass, 0f));
-
-            // air friction
-            //ball.ApplyForce(-ball.v * airFrictionConst);
-
-        }
     }
 
     void PhysicsSimulate(float deltaTime) {
         for (int i = 0; i < masses.Count; ++i) {
-            bool colliding = false;
             var a = masses[i];
             var aR = a.GetComponent<RectTransform>().sizeDelta.x * 0.5f;
             var aP = a.transform.position;

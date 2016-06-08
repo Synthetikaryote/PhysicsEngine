@@ -28,7 +28,7 @@ public class OrientedBoundingBox : MonoBehaviour {
         }
         a /= n; b /= n; c /= n;
 
-        if (Mathf.Approximately(c, 0f)) {
+        if (!Mathf.Approximately(c, 0f)) {
             // find the biggest lambda
             // | a-L c |  where L is lambda
             // | c b-L |
@@ -73,7 +73,7 @@ public class OrientedBoundingBox : MonoBehaviour {
         // find the OBB center point
         var midR = (minR + maxR) * 0.5f;
         var midS = (minS + maxS) * 0.5f;
-        var center = R * midR + S * midS;
+        center = R * midR + S * midS;
 
         // find the corner points for the visualization
         var cornerPoints = new List<Vector3>(4);
