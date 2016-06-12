@@ -2,6 +2,16 @@
 using UnityEngine.UI;
 using System.Collections.Generic;
 
+public class PolySegment {
+    public Vector3 A, B, N;
+    public PolySegment(Vector3 A, Vector3 B, Vector3 N)
+    {
+        this.A = A;
+        this.B = B;
+        this.N = N;
+    }
+}
+
 public class CollisionSimulationPolygons : MonoBehaviour {
     public GameObject polyPrefab;
     public GameObject segmentPrefab;
@@ -148,6 +158,7 @@ public class CollisionSimulationPolygons : MonoBehaviour {
 
                 float shortestT = -1f;
                 var collisionPoint = Vector3.zero;
+                var collisionNormal = Vector3.zero;
                 bool aOnB = true;
                 // do this both directions: a on b and b on a
                 for (int k = 0; k < 2; ++k) {
@@ -161,6 +172,7 @@ public class CollisionSimulationPolygons : MonoBehaviour {
                     var dV = first ? b.v : a.v;
                     var deltaP = cP - dP;
                     var deltaV = cV - dV;
+                    var frameTime = first ? a.frameTime : b.frameTime;
 
                     // skip if they're not heading toward each other
                     //var pDotV = Vector3.Dot(deltaP, deltaV);
@@ -175,21 +187,22 @@ public class CollisionSimulationPolygons : MonoBehaviour {
                         deltaP - (Vector3)cOBB.R * cOBB.halfSizeR + (Vector3)cOBB.S * cOBB.halfSizeS,
                         deltaP - (Vector3)cOBB.R * cOBB.halfSizeR - (Vector3)cOBB.S * cOBB.halfSizeS
                     }) {
-                        var r = Mathf.Min(a.frameTime, b.frameTime) * deltaV;
+                        var r = frameTime * deltaV;
 
                         // go through each of d's sides
-                        foreach (var side in new Vector3[][] {
-                            new Vector3[] { dOBB.R * dOBB.halfSizeR + dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeS * -dOBB.S },
-                            new Vector3[] { dOBB.R * dOBB.halfSizeR - dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeR * -dOBB.R },
-                            new Vector3[] { -dOBB.R * dOBB.halfSizeR + dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeR * dOBB.R },
-                            new Vector3[] { -dOBB.R * dOBB.halfSizeR - dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeS * dOBB.S }
+                        foreach (var side in new PolySegment[] {
+                            new PolySegment(dOBB.R * dOBB.halfSizeR + dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeS * -dOBB.S, dOBB.R),
+                            new PolySegment(dOBB.R * dOBB.halfSizeR - dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeR * -dOBB.R, -dOBB.S),
+                            new PolySegment(-dOBB.R * dOBB.halfSizeR + dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeR * dOBB.R, dOBB.S),
+                            new PolySegment(-dOBB.R * dOBB.halfSizeR - dOBB.S * dOBB.halfSizeS, 2f * dOBB.halfSizeS * dOBB.S, -dOBB.R)
                         }) {
-                            var q = side[0];
-                            var s = side[1];
+                            // early out if the velocity is toward the backside of this segment
+                            if (Vector3.Dot(deltaV, side.N) >= 0)
+                                continue;
 
-                            if (first) {
+                            var q = side.A;
+                            var s = side.B;
 
-                            }
                             // t = (q − p) × s / (r × s)
                             // u = (q − p) × r / (r × s)
                             var qmp = q - p;
@@ -208,8 +221,9 @@ public class CollisionSimulationPolygons : MonoBehaviour {
                                 continue;
                             // keep track of the earliest collision
                             if (shortestT < 0 || t < shortestT) {
-                                shortestT = t * Mathf.Min(a.frameTime, b.frameTime);
+                                shortestT = t * frameTime;
                                 collisionPoint = dP + q + u * s;
+                                collisionNormal = side.N;
                                 aOnB = first;
                             }
                         }
@@ -219,11 +233,14 @@ public class CollisionSimulationPolygons : MonoBehaviour {
                 if (shortestT < 0f)
                     continue;
 
+                debugDots[0].transform.position = collisionPoint;
+                debugDots[0].SetActive(true);
+
                 // advance both polygons to the collision point
                 a.PhysicsSimulate(shortestT);
                 b.PhysicsSimulate(shortestT);
                 // bounce both off each other
-                var n = (aOnB ? aP - bP : bP - aP).normalized;
+                var n = collisionNormal;
                 // calculate impact momentum
                 // momentum = (2 * (aV . n - bV . n)) / (a.mass + b.mass)
                 var momentum = (2f * (Vector3.Dot(a.v, n) - Vector3.Dot(b.v, n))) / (a.mass + b.mass);
@@ -233,22 +250,6 @@ public class CollisionSimulationPolygons : MonoBehaviour {
             }
 
             a.PhysicsSimulate(a.frameTime);
-
-            //bool colliding = false;
-            //for (int j = 0; j < polys.Count; ++j) {
-            //    var b = polys[j];
-            //    if (a == b) continue;
-            //    var aRT = a.GetComponent<RectTransform>();
-            //    var bRT = b.GetComponent<RectTransform>();
-            //    var aR = aRT.sizeDelta.x * 0.75f; // should be half width but not sure why this works better
-            //    var bR = bRT.sizeDelta.x * 0.75f;
-            //    float distSq = (aRT.position - bRT.position).sqrMagnitude;
-            //    float radiiSq = aR * aR + bR * bR;
-            //    colliding |= distSq <= radiiSq;
-            //}
-            //foreach (var segment in a.transform.GetComponentsInChildren<Image>())
-            //    segment.color = colliding ? collidingColor : normalColor;
-            //a.PhysicsSimulate(deltaTime);
         }
     }
 }
